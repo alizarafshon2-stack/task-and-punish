@@ -41,4 +41,3 @@ jobs:
         with:
           name: task-and-punish-app
           path: build/app/outputs/flutter-apk/app-release.apk
-

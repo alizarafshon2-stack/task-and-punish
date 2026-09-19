@@ -1,0 +1,19 @@
+name: task_and_punish
+description: Жесткий трекер дисциплины с AI-контролем и наказаниями.
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  camera: ^0.10.5
+  flutter_tts: ^3.8.3
+  sensors_plus: ^4.0.2
+  geolocator: ^10.1.0
+  shared_preferences: ^2.2.2
+  intl: ^0.18.1
+
+flutter:
+  uses-material-design: true

@@ -24,23 +24,22 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Generate Android project structure
+      - name: Generate Android structure
         run: |
           flutter create . --org com.taskandpunish --project-name task_and_punish --platforms=android
-
-      - name: Fix Android SDK Versions for Camera & GPS
-        run: |
-          # Исправляем версии SDK в файлах build.gradle и build.gradle.kts
+          # Устанавливаем минимальный SDK 23 для камеры
           find android/app -name "build.gradle*" -exec sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 23/g' {} +
           find android/app -name "build.gradle*" -exec sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/g' {} +
-          find android/app -name "build.gradle*" -exec sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 34/g' {} +
-          find android/app -name "build.gradle*" -exec sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 34/g' {} +
 
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Build Debug APK
-        run: flutter build apk --debug --verbose
+      - name: Build and Catch Exact Error
+        run: |
+          flutter build apk --debug > build_log.txt 2>&1 || true
+          echo "=== ВОТ ЗДЕСЬ ОШИБКА ==="
+          grep -C 10 "FAILURE:\|What went wrong:\|Execution failed for task" build_log.txt || tail -n 60 build_log.txt
+          test -f build/app/outputs/flutter-apk/app-debug.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

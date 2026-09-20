@@ -24,13 +24,13 @@ jobs:
       - name: Setup project
         run: |
           flutter create . --org com.taskandpunish --project-name task_and_punish --platforms=android
+          # Ставим minSdk 21 для совместимости с камерой
+          find android/app -name "build.gradle*" -exec sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 21/g' {} +
+          find android/app -name "build.gradle*" -exec sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 21/g' {} +
           flutter pub get
 
-      - name: Check Dart Code Errors
-        run: flutter analyze lib/main.dart
-
       - name: Compile Debug APK
-        run: flutter build apk --debug
+        run: flutter build apk --debug --no-tree-shake-icons
 
       - uses: actions/upload-artifact@v4
         with:

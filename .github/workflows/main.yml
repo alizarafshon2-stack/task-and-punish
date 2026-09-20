@@ -21,11 +21,20 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Build APK
+      - name: Generate Android Skeleton
         run: |
           flutter create . --org com.taskandpunish --project-name task_and_punish --platforms=android
-          flutter pub get
-          flutter build apk --debug
+          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+
+      - name: Force Min SDK 21 for Camera Plugin
+        run: |
+          echo "subprojects { afterEvaluate { project -> if (project.hasProperty('android')) { android { defaultConfig { minSdkVersion 21 } } } } }" >> android/build.gradle
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Compile Debug APK
+        run: flutter build apk --debug --no-tree-shake-icons
 
       - uses: actions/upload-artifact@v4
         with:

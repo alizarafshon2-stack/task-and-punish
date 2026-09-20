@@ -24,19 +24,9 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Recreate Android Project & Configure SDK
+      - name: Generate Android project structure
         run: |
-          flutter create --org com.taskandpunish --project-name task_and_punish --platforms=android temp_app
-          cp -r temp_app/android ./
-          rm -rf temp_app
-          
-          # Задаем SDK 34 и minSdk 23 (нужно для камеры и GPS)
-          sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 34/g' android/app/build.gradle
-          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/g' android/app/build.gradle
-          sed -i 's/targetSdkVersion flutter.targetSdkVersion/targetSdkVersion 34/g' android/app/build.gradle
-          
-          # Разрешения камеры, геолокации и оверлея поверх окон
-          sed -i '/<application/i \    <uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />\n    <uses-permission android:name="android.permission.INTERNET" />' android/app/src/main/AndroidManifest.xml
+          flutter create . --org com.taskandpunish --project-name task_and_punish --platforms=android
 
       - name: Get dependencies
         run: flutter pub get

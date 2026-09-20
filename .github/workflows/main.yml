@@ -28,11 +28,19 @@ jobs:
         run: |
           flutter create . --org com.taskandpunish --project-name task_and_punish --platforms=android
 
+      - name: Fix Android SDK Versions for Camera & GPS
+        run: |
+          # Исправляем версии SDK в файлах build.gradle и build.gradle.kts
+          find android/app -name "build.gradle*" -exec sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 23/g' {} +
+          find android/app -name "build.gradle*" -exec sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/g' {} +
+          find android/app -name "build.gradle*" -exec sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 34/g' {} +
+          find android/app -name "build.gradle*" -exec sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 34/g' {} +
+
       - name: Get dependencies
         run: flutter pub get
 
       - name: Build Debug APK
-        run: flutter build apk --debug
+        run: flutter build apk --debug --verbose
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

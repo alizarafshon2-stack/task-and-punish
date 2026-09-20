@@ -22,13 +22,21 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.19.6'
           channel: 'stable'
 
-      - name: Recreate Android Project Files
+      - name: Recreate Android Project & Configure Permissions
         run: |
           flutter create --org com.taskandpunish --project-name task_and_punish --platforms=android temp_app
           cp -r temp_app/android ./
           rm -rf temp_app
+          
+          # Устанавливаем minSdkVersion 23 (требование для камеры и GPS)
+          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/g' android/app/build.gradle
+          sed -i 's/minSdkVersion [0-9]*/minSdkVersion 23/g' android/app/build.gradle
+          
+          # Прописываем системные разрешения в AndroidManifest
+          sed -i '/<application/i \    <uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.INTERNET" />' android/app/src/main/AndroidManifest.xml
 
       - name: Get dependencies
         run: flutter pub get

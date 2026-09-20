@@ -21,18 +21,17 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Setup project
+      - name: Setup Android Project
         run: |
           flutter create . --org com.taskandpunish --project-name task_and_punish --platforms=android
-          # Ставим minSdk 21 для совместимости с камерой
-          find android/app -name "build.gradle*" -exec sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 21/g' {} +
-          find android/app -name "build.gradle*" -exec sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 21/g' {} +
           flutter pub get
 
-      - name: Compile Debug APK
-        run: flutter build apk --debug --no-tree-shake-icons
+      - name: Build Debug APK with MinSdk 21
+        run: |
+          flutter build apk --debug --no-tree-shake-icons --dart-define=flutter.minSdkVersion=21
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: task-and-punish-app
           path: build/app/outputs/flutter-apk/app-debug.apk

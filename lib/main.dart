@@ -394,8 +394,8 @@ class _PunishmentLockScreenState extends State<PunishmentLockScreen> {
   bool _isMoving = false;
   double _motionIntensity = 0.0;
   Timer? _shoutingTimer;
-  int _secondsNoMotion = 0;
   String _userBio = "ленивый";
+  StreamSubscription? _sensorSub;
 
   @override
   void initState() {
@@ -429,7 +429,7 @@ class _PunishmentLockScreenState extends State<PunishmentLockScreen> {
   }
 
   void _initSensors() {
-    userAccelerometerEvents.listen((UserAccelerometerEvent event) {
+    _sensorSub = userAccelerometerEventStream().listen((UserAccelerometerEvent event) {
       final motion = event.y.abs() + event.x.abs() + event.z.abs();
       setState(() {
         _motionIntensity = motion;
@@ -447,7 +447,6 @@ class _PunishmentLockScreenState extends State<PunishmentLockScreen> {
     if (_repCounter >= 30) return;
     setState(() {
       _repCounter++;
-      _secondsNoMotion = 0;
     });
     if (_repCounter >= 30) {
       _unlockApp();
@@ -467,10 +466,7 @@ class _PunishmentLockScreenState extends State<PunishmentLockScreen> {
   void _startTimer() {
     _shoutingTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (_motionIntensity < 4.0) {
-        _secondsNoMotion += 3;
         _shout();
-      } else {
-        _secondsNoMotion = 0;
       }
     });
   }
@@ -485,6 +481,7 @@ class _PunishmentLockScreenState extends State<PunishmentLockScreen> {
 
   void _unlockApp() {
     _shoutingTimer?.cancel();
+    _sensorSub?.cancel();
     _cameraController?.dispose();
     _tts.speak("Наказание завершено. Блокировка снята.");
     Navigator.pop(context);
@@ -493,6 +490,7 @@ class _PunishmentLockScreenState extends State<PunishmentLockScreen> {
   @override
   void dispose() {
     _shoutingTimer?.cancel();
+    _sensorSub?.cancel();
     _cameraController?.dispose();
     super.dispose();
   }

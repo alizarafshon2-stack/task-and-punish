@@ -23,21 +23,24 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Prepare Android Project
+      - name: Prepare Clean Android Project
         run: |
           rm -rf android
           flutter create . --org com.taskandpunish --project-name task_and_punish --platforms=android
-          echo "flutter.minSdkVersion=21" >> android/local.properties
+          
+          # Принудительно задаем minSdk = 21 в новом формате Kotlin DSL (.kts)
+          if [ -f "android/app/build.gradle.kts" ]; then
+            sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 21/g' android/app/build.gradle.kts
+            sed -i 's/minSdkVersion.*/minSdkVersion = 21/g' android/app/build.gradle.kts
+          fi
+          if [ -f "android/app/build.gradle" ]; then
+            sed -i 's/minSdkVersion.*/minSdkVersion 21/g' android/app/build.gradle
+          fi
+
           flutter pub get
 
-      - name: Build Debug APK with Error Dump
-        run: |
-          flutter build apk --debug --no-tree-shake-icons || {
-            echo "========== ОШИБКА GRADLE =========="
-            cat android/app/build.gradle || true
-            cat android/local.properties || true
-            exit 1
-          }
+      - name: Build Debug APK
+        run: flutter build apk --debug --no-tree-shake-icons
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

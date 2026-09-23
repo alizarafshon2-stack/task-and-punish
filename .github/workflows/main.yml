@@ -23,22 +23,17 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Generate Clean Android Project
+      - name: Prepare Android Project
         run: |
           rm -rf android
           flutter create . --org com.taskandpunish --project-name task_and_punish --platforms=android
+          echo "flutter.minSdkVersion=21" >> android/local.properties
+          echo "flutter.targetSdkVersion=34" >> android/local.properties
+          echo "flutter.compileSdkVersion=34" >> android/local.properties
           flutter pub get
 
-      - name: Build APK with Error Capture
-        run: |
-          cd android
-          ./gradlew assembleDebug --stacktrace || {
-            echo "=========================================="
-            echo "ГЛАВНАЯ ПРИЧИНА ОШИБКИ:"
-            ./gradlew assembleDebug --quiet 2>&1 | tail -n 25
-            echo "=========================================="
-            exit 1
-          }
+      - name: Build Debug APK
+        run: flutter build apk --debug --no-tree-shake-icons
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

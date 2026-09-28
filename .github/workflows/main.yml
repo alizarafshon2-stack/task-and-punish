@@ -23,26 +23,21 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Prepare Clean Android Project
+      - name: Generate Android Skeleton and Fix SDK Version
         run: |
           rm -rf android
           flutter create . --org com.taskandpunish --project-name task_and_punish --platforms=android
           
-          # Принудительно задаем minSdk = 21 в новом формате Kotlin DSL (.kts)
-          if [ -f "android/app/build.gradle.kts" ]; then
-            sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 21/g' android/app/build.gradle.kts
-            sed -i 's/minSdkVersion.*/minSdkVersion = 21/g' android/app/build.gradle.kts
-          fi
-          if [ -f "android/app/build.gradle" ]; then
-            sed -i 's/minSdkVersion.*/minSdkVersion 21/g' android/app/build.gradle
-          fi
-
+          # Заменяем minSdk на 21 в файле Kotlin DSL (.kts)
+          sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 21/g' android/app/build.gradle.kts || true
+          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 34/g' android/app/build.gradle.kts || true
+          
           flutter pub get
 
       - name: Build Debug APK
         run: flutter build apk --debug --no-tree-shake-icons
 
-      - name: Upload APK
+      - name: Upload Finished APK
         uses: actions/upload-artifact@v4
         with:
           name: task-and-punish-app

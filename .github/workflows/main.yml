@@ -23,17 +23,43 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Setup Android Project & Fix Repositories
+      - name: Setup Android Project & Override Plugin SDKs
         run: |
           rm -rf android
           flutter create . --org com.taskandpunish --project-name task_and_punish --platforms=android
           
-          # Добавляем mavenCentral во все настройки Gradle
-          echo "flutter.minSdkVersion=21" >> android/local.properties
+          # Принудительно заставляем ВСЕ плагины (flutter_tts, camera) использовать SDK 34 и minSdk 21
+          cat << 'EOF' >> android/build.gradle
+          subprojects {
+              afterEvaluate { project ->
+                  if (project.hasProperty('android')) {
+                      project.android {
+                          compileSdkVersion 34
+                          defaultConfig {
+                              minSdkVersion 21
+                              targetSdkVersion 34
+                          }
+                      }
+                  }
+              }
+          }
+          EOF
           
-          # Гарантируем наличие mavenCentral для плагинов
-          sed -i 's/google()/google()\n        mavenCentral()/g' android/settings.gradle* || true
-          sed -i 's/google()/google()\n        mavenCentral()/g' android/build.gradle* || true
+          # Для проектов с Kotlin DSL (.kts)
+          if [ -f "android/build.gradle.kts" ]; then
+            cat << 'EOF' >> android/build.gradle.kts
+            subprojects {
+                afterEvaluate {
+                    if (project.extensions.findByName("android") != null) {
+                        val android = project.extensions.getByName("android") as com.android.build.gradle.BaseExtension
+                        android.compileSdkVersion(34)
+                        android.defaultConfig.minSdk = 21
+                        android.defaultConfig.targetSdk = 34
+                    }
+                }
+            }
+          EOF
+          fi
 
           flutter pub get
 

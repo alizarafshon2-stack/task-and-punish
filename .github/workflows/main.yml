@@ -23,11 +23,18 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Setup Android Project
+      - name: Setup Android Project & Fix Repositories
         run: |
           rm -rf android
           flutter create . --org com.taskandpunish --project-name task_and_punish --platforms=android
+          
+          # Добавляем mavenCentral во все настройки Gradle
           echo "flutter.minSdkVersion=21" >> android/local.properties
+          
+          # Гарантируем наличие mavenCentral для плагинов
+          sed -i 's/google()/google()\n        mavenCentral()/g' android/settings.gradle* || true
+          sed -i 's/google()/google()\n        mavenCentral()/g' android/build.gradle* || true
+
           flutter pub get
 
       - name: Build Debug APK

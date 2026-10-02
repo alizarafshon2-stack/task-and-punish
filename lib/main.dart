@@ -407,12 +407,14 @@ class _PunishmentLockScreenState extends State<PunishmentLockScreen> {
     _startTimer();
   }
 
-  Future<void> _loadProfileData() async {
+    Future<void> _loadProfileData() async {
     final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
       _userBio = prefs.getString('user_bio') ?? "ленивый";
     });
   }
+
 
   void _initCamera() {
     if (cameras.isEmpty) return;
